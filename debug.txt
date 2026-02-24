@@ -1,0 +1,10 @@
+spifractaltraceanimaudiobnopcrossfadegeneralized_vs2017.exe
+
+modestring is: 
+global_debug is: 0
+global_INPUTIMAGES_ARE_VIDEOSEQUENCEFRAMES is: 0
+global_INPUTIMAGES_ARE_WIDESCREENFRAMES is: 0
+global_INPUTIMAGES_ARE_TOBESCALEDDOWNTOIDENTICALSIZE is: 0
+
+error, can't open audio file
+

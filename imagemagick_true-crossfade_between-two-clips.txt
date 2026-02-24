@@ -1,0 +1,20 @@
+https://imagemagick.org/discourse-server/viewtopic.php?t=23819
+
+Perhaps the OP wants to dissolve (aka cross-fade) the last (n) frames with the first (n) frames, like a conventional cross-fade from one video clip to the next.
+
+I would do that in a script, looping through the (n) frames, with an appropriate blend. The basic command is ...
+CODE: SELECT ALL
+
+convert frame_000090.png frame_000001.png -compose Blend compose:args={x} -composite out_frame_1.png
+... where {x} varies from zero to 100 in (n) steps, and the frame numbers increase.
+
+
+
+cd "C:\Program Files (x86)\ImageMagick-7.0.8-Q8"
+convert c:\temp\frame_000117.jpg c:\temp\frame_000270.jpg -compose blend -define compose:args=0,100 -composite c:\temp\frame_117-270_100-0pc.jpg
+convert c:\temp\frame_000117.jpg c:\temp\frame_000270.jpg -compose blend -define compose:args=25,75 -composite c:\temp\frame_117-270_75-25pc.jpg
+convert c:\temp\frame_000117.jpg c:\temp\frame_000270.jpg -compose blend -define compose:args=50,50 -composite c:\temp\frame_117-270_50-50pc.jpg
+convert c:\temp\frame_000117.jpg c:\temp\frame_000270.jpg -compose blend -define compose:args=75,25 -composite c:\temp\frame_117-270_25-75pc.jpg
+convert c:\temp\frame_000117.jpg c:\temp\frame_000270.jpg -compose blend -define compose:args=100,0 -composite c:\temp\frame_117-270_0-100pc.jpg
+
+convert c:\temp\frame_000117.jpg c:\temp\frame_000270.jpg -compose blend -define compose:args=12.5,87.5 -composite c:\temp\frame_117-270_87-13pc.jpg

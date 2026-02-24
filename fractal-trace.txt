@@ -1,0 +1,66 @@
+https://mail.gnome.org/archives/gimp-developer-list/2012-August/msg00270.html
+
+Re: [Gimp-developer] Request for equations for Fractal Trace and QBist
+From: Mukund Sivaraman <muks banu com>
+To: Katie Harrison <harrison9340 googlemail com>
+Cc: gimp-developer-list gnome org
+Subject: Re: [Gimp-developer] Request for equations for Fractal Trace and QBist
+Date: Fri, 31 Aug 2012 17:08:29 +0530
+Hi Katie
+
+On Thu, Aug 30, 2012 at 10:44:21PM +0100, Katie Harrison wrote:
+> Hi, I love using the Fractal Trace and QBist filters, but I wish I could
+> apply similar effects to SVG images, so I'd like to (attempt to) write
+> Inkscape extensions that do something similar. My problem is that I'm just
+> a python developer who can't read c code, so I was wondering if the math
+> equations used by these filters are written down somewhere, or if there is
+> someone on this list who knows what they are?
+
+For Fractal trace, the method is simple. If you are not familiar with
+the Mandelbrot set, first make yourself familiar with it so that you
+can write a program to draw it.
+
+http://en.wikipedia.org/wiki/Mandelbrot_set
+
+I see that you are not familiar with C, but here is a small
+simplistic program to draw it that you may still be able to follow:
+
+https://banu.com/blog/27/rest-in-peace-mandelbrot/
+
+Once you have understood it, here's how the Fractal trace works. For
+every point in the target image (mapped to the set, and in set
+co-ordinates) say z = c = (x,y), Fractal trace puts the point through
+the equation:
+
+z = z^2 + c
+
+On every iteration, z is a new point in the set. Typically this point
+hops around and around the original (x,y).  [The XaoS program has a
+nice animated illustration of this in its help section.]
+
+After many iterations, either the point stays close to (x,y), or
+'escapes' and jumps far away from (x,y).  You should be able to
+determine if you should stop iterating based on the distance of the
+current value of 'z' from (x,y), or after 'N' iterations if the point
+has not ventured far (and likely won't).  [This is the same type of
+escape checking that you'd do when drawing the Mandelbrot set.]
+
+Once you decide to stop iterating, the color of pixel (in image
+co-ordinates) corresponding to resulting value of 'z' (in set
+co-ordinates) is set as the color of pixel in the target image (in
+image co-ordinates) corresponding to the (x,y) point (in
+set-coordinates).
+
+This class of operation is called a 'map', as the color of the point
+maps to that of another.  Usually some sort of sampling is also
+performed around (x,y) (in the domain of the map) to get rid of
+aliasing.
+
+That is all. If you have understood how the Mandelbrot set is generated
+and are able to write a program to generate it, then doing the Fractal
+trace should be straightforward after that.
+
+
+Kind regards,
+
+Mukund

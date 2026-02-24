@@ -1,0 +1,205 @@
+1)
+https://stackoverflow.com/questions/40461143/c-opencv-rotating-image-by-an-arbitrary-number-degree
+center = image center in pixel coordinate = width/2,height/2
+for each pixels (for each rows and for each cols)
+	rot_mat = getRotationMatrix2D(center,angle,scale);
+
+Mat rotatedimage;
+warpAffine(image1, rotatedimage, rot_mat, image1.size());
+
+
+
+
+2)
+https://stackoverflow.com/questions/26941540/how-to-fill-a-polygon-with-image-opencv
+
+My polygon has 4 angles, but it is not a rectangle. It is some convex polygon which shape is constantly changing. With Core.fillConvexPoly you can fill it with color. I would like to place there some image. So that it will be textured.
+
+I am using OpenVC for Android. Does anyone have any insight?
+
+Thank you!
+
+-epsilon
+
+you first need to find transformation matrix that projects your texture corners
+
+{(0,0), (w,0), (w,h), (0,h)}
+
+to corresponding polygon corners by using getPerspectiveTransform;
+
+and then use warpPerspective to fit the texture into your polygon.
+
+https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html?highlight=warpperspective#getperspectivetransform
+https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html?highlight=warpperspective#warpperspective
+http://ww7.opencv-code.com/
+http://opencvexamples.blogspot.com/2014/01/perspective-transform.html#.VGdFRfmsV8E
+
+
+
+3)
+https://www.opencv-srf.com/2018/01/invert-images-and-videos.html
+
+Inverting an image is like taking the negative of an image.
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include <cv.h>
+#include <highgui.h>
+
+int main()
+{
+        //display the original image
+        IplImage* img = cvLoadImage("C:/MyPic.jpg");
+        cvNamedWindow("MyWindow");
+        cvShowImage("MyWindow", img);
+
+        //invert and display the inverted image
+        cvNot(img, img);
+        cvNamedWindow("Inverted");
+        cvShowImage("Inverted", img);
+
+        cvWaitKey(0);
+      
+        //cleaning up
+        cvDestroyWindow("MyWindow");
+        cvDestroyWindow("Inverted");
+        cvReleaseImage(&img);
+      
+        return 0;
+}
+ New OpenCV functions which are not found earlier are explained here
+cvNot(img, img)
+This function inverts every bit in every element of the image in the 1st parameter and places the result in the image in the 2nd parameter.
+This function can process images in place. That means same variable can be used for the 1st and 2nd parameters.
+e.g - For a 8 bit image, the value 0 will be mapped to (255-0)=255
+                                        the value 46 will be mapped to (255-46)=209
+
+        For a 16 bit image, the value 0 will be mapped to (65535-0)=65535
+                                   the value 46 will be mapped to (65535-46)=65489
+
+
+
+4)
+https://stackoverflow.com/questions/36225420/change-all-white-pixels-of-image-to-transparent-in-opencv-c
+You can convert the input image to BGRA channel (color image with alpha channel) and then modify each pixel that is white to set the alpha value to zero.
+See this code:
+
+    // load as color image BGR
+    cv::Mat input = cv::imread("C:/StackOverflow/Input/transparentWhite.png");
+
+    cv::Mat input_bgra;
+    cv::cvtColor(input, input_bgra, CV_BGR2BGRA);
+
+    // find all white pixel and set alpha value to zero:
+    for (int y = 0; y < input_bgra.rows; ++y)
+    for (int x = 0; x < input_bgra.cols; ++x)
+    {
+        cv::Vec4b & pixel = input_bgra.at<cv::Vec4b>(y, x);
+        // if pixel is white
+        if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255)
+        {
+            // set alpha to zero:
+            pixel[3] = 0;
+        }
+    }
+
+    // save as .png file (which supports alpha channels/transparency)
+    cv::imwrite("C:/StackOverflow/Output/transparentWhite.png", input_bgra);
+This will save your image with transparency. The result image opened with GIMP looks like:
+
+As you can see, some "white regions" are not transparent, this means your those pixel weren't perfectly white in the input image. Instead you can try
+
+    // if pixel is white
+    int thres = 245; // where thres is some value smaller but near to 255.
+    if (pixel[0] >= thres&& pixel[1] >= thres && pixel[2] >= thres)
+
+
+
+5) possibly useful to detect human skin and segment it
+https://www.learnopencv.com/invisibility-cloak-using-color-detection-and-segmentation-with-opencv/
+https://www.pyimagesearch.com/2014/08/18/skin-detection-step-step-example-using-python-opencv/
+Detecting Skin in Images & Video Using Python and OpenCV
+You know the drill. Open up your favorite editor, create a new file, name it skindetector.py , and let’s get to work:
+
+Example: Detecting Skin in Images using Python and OpenCV
+# import the necessary packages
+from pyimagesearch import imutils
+import numpy as np
+import argparse
+import cv2
+# construct the argument parse and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-v", "--video",
+	help = "path to the (optional) video file")
+args = vars(ap.parse_args())
+# define the upper and lower boundaries of the HSV pixel
+# intensities to be considered 'skin'
+lower = np.array([0, 48, 80], dtype = "uint8")
+upper = np.array([20, 255, 255], dtype = "uint8")
+
+Example: Detecting Skin in Images using Python and OpenCV
+# if a video path was not supplied, grab the reference
+# to the gray
+if not args.get("video", False):
+	camera = cv2.VideoCapture(0)
+# otherwise, load the video
+else:
+	camera = cv2.VideoCapture(args["video"])
+
+Example: Detecting Skin in Images using Python and OpenCV
+# keep looping over the frames in the video
+while True:
+	# grab the current frame
+	(grabbed, frame) = camera.read()
+	# if we are viewing a video and we did not grab a
+	# frame, then we have reached the end of the video
+	if args.get("video") and not grabbed:
+		break
+	# resize the frame, convert it to the HSV color space,
+	# and determine the HSV pixel intensities that fall into
+	# the speicifed upper and lower boundaries
+	frame = imutils.resize(frame, width = 400)
+	converted = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+	skinMask = cv2.inRange(converted, lower, upper)
+	# apply a series of erosions and dilations to the mask
+	# using an elliptical kernel
+	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
+	skinMask = cv2.erode(skinMask, kernel, iterations = 2)
+	skinMask = cv2.dilate(skinMask, kernel, iterations = 2)
+	# blur the mask to help remove noise, then apply the
+	# mask to the frame
+	skinMask = cv2.GaussianBlur(skinMask, (3, 3), 0)
+	skin = cv2.bitwise_and(frame, frame, mask = skinMask)
+	# show the skin in the image along with the mask
+	cv2.imshow("images", np.hstack([frame, skin]))
+	# if the 'q' key is pressed, stop the loop
+	if cv2.waitKey(1) & 0xFF == ord("q"):
+		break
+# cleanup the camera and close any open windows
+camera.release()
+cv2.destroyAllWindows()
+
+
+
+6)
+http://bednarikjan.github.io/2015/08/08/3D_model_estimation_from_2D_image.html
+c++ reconstruction 3d geometry from single 2d image
+
+
+
+7) image completion (when kicking out part of the image and want to refill)
+https://github.com/YuanTingHsieh/Image_Completion
+https://github.com/WenFuLee/CS-766-Computer-Vision
+
+
+
+8) gimp selective coloring (i.e. turn a color image into b&w except for some colors)
+https://www.gimp.org/tutorials/Selective_Color/
+
+
+
+
+9) color identification
+https://towardsdatascience.com/color-identification-in-images-machine-learning-application-b26e770c4c71
+opencv
